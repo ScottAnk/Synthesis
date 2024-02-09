@@ -1,46 +1,42 @@
-import * as Tone from 'tone';
-import * as ranges from './ranges';
+import * as Tone from "tone";
+import * as ranges from "./ranges";
 
-class Synth{
-  constructor(status_sender, debug = false){
-    this.debug = debug
-    this.synth=null;
-    this.status="off";
+class Synth {
+  constructor(status_sender = null, debug = false) {
+    this.debug = debug;
+    this.synth = null;
     this.range = ranges.seven_octave;
-    this.status_sender=status_sender;
-    this.send_status();
+    this.status_sender = status_sender;
+    this._init_synth();
   }
 
-  send_status(){
-    if(this.status_sender){
+  _set_status(status) {
+    this.status = status;
+    if (this.status_sender) {
       this.status_sender(this.status);
     }
   }
 
-  toggle_debug(){
+  toggle_debug() {
     this.debug = !this.debug;
     this.synth.debug = this.debug;
   }
 
-  start(){
+  _init_synth() {
     this.synth = new Tone.Synth().toDestination();
-    this.synth.debug=this.debug;
-    this.status = "ready";
-    this.send_status();
+    this.synth.debug = this.debug;
+    this._set_status("ready");
   }
 
-  play_note (note){
-    if(!this.synth) {
+  play_note(note) {
+    if (!this.synth) {
       this.start();
-      return
+      return;
     }
 
     this.synth.triggerAttackRelease(note, "8n");
-    this.status="playing";
-    this.send_status();
+    this._set_status("playing");
   }
-
 }
 
-
-export default Synth
+export default Synth;
