@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import Synth from "./../tools/Synth.js";
+import Synth from "../common/Synth.js";
+
 
 function ControlPanel() {
   // let [synth, synth_status] = useSynth();
