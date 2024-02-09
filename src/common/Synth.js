@@ -5,7 +5,7 @@ class Synth {
   constructor(status_sender = null, debug = false) {
     this.debug = debug;
     this.synth = null;
-    this.range = ranges.seven_octave;
+    this.range = ranges.two_five;
     this.status_sender = status_sender;
     this._init_synth();
   }
