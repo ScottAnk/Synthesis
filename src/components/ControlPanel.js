@@ -2,21 +2,28 @@ import { useState, useEffect, useMemo } from "react";
 import * as Tone from "tone";
 import * as ranges from "../common/ranges.js";
 
+const instruments = [];
+
 function ControlPanel() {
   let [loop_addition, set_loop_addition] = useState({
     note: "C2",
-    cadence: "1:0:0",
+    cadence: "0:1:0",
     duration: "16n",
     start: "0:0:0",
     stop: "16:0:0",
     instrument: null,
     scheduled: false,
+    key: 0,
   });
 
   const range = ranges.one_five;
   const transport = Tone.Transport;
   transport.bpm.value = 180;
   const get_synth = () => new Tone.AMSynth().toDestination();
+  const sample_instrument = useMemo(
+    () => new Tone.AMSynth().toDestination(),
+    []
+  );
 
   const synth = useMemo(() => get_synth(), []);
   const transport_play_pause = () => {
@@ -53,30 +60,23 @@ function ControlPanel() {
       return;
     }
 
-    console.log("adding loop element");
-    console.log(loop_addition);
-
+    instruments[loop_addition.key] = get_synth();
+    instruments[loop_addition.key].debug = true;
+    const play_note = function () {
+      this.triggerAttackRelease(loop_addition.note, loop_addition.duration);
+    }.bind(instruments[loop_addition.key]);
     transport.scheduleRepeat(
-      () => {
-        const instrument = get_synth();
-        instrument.debug = true;
-        instrument.triggerAttackRelease(
-          loop_addition.note,
-          loop_addition.duration
-        );
-      },
+      play_note,
       loop_addition.cadence,
       loop_addition.start
-      // loop_addition.stop
+      // loop_addition.stop // I'll probably put this back in once I get a better GUI going
     );
     loop_addition.scheduled = true;
+    loop_addition.key += 1;
   };
 
   return (
     <div className="ControlPanel">
-      <div>
-        <button onClick={() => synth.toggle_debug()}>toggle debug</button>
-      </div>
       <div>
         <button onClick={transport_play_pause}>play/pause transport</button>
         <button onClick={transport_stop}>stop transport</button>
@@ -106,21 +106,13 @@ function ControlPanel() {
           value={loop_addition.start}
         />
       </label>
-      {/* <label>
-        stop (bars:quarters:sixteenths)
-        <input
-          type="text"
-          onChange={(e) => modify_loop_addition("stop", e.target.value)}
-          value={loop_addition.stop}
-        />
-      </label> */}
       <div className="keys">
         <p>Note {loop_addition.note ? loop_addition.note : "none"}</p>
         {range.map((note, index) => (
           <button
             key={index}
             onClick={() => {
-              get_synth().triggerAttackRelease(note, "8n");
+              sample_instrument.triggerAttackRelease(note, "8n");
               modify_loop_addition("note", note);
             }}
           >
