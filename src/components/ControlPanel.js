@@ -3,6 +3,7 @@ import * as Tone from "tone";
 import * as ranges from "../common/ranges.js";
 
 const instruments = [];
+const loop_display_headers = ["note", "cadence", "duration", "start"];
 
 function ControlPanel() {
   let [loop_addition, set_loop_addition] = useState({
@@ -15,6 +16,8 @@ function ControlPanel() {
     scheduled: false,
     key: 0,
   });
+
+  let [loop_display, set_loop_display] = useState([]);
 
   const range = ranges.one_five;
   const transport = Tone.Transport;
@@ -71,6 +74,19 @@ function ControlPanel() {
       loop_addition.start
       // loop_addition.stop // I'll probably put this back in once I get a better GUI going
     );
+
+    console.log(`setting loop display`);
+    set_loop_display(
+      loop_display.concat([
+        [
+          loop_addition.note,
+          loop_addition.cadence,
+          loop_addition.duration,
+          loop_addition.start,
+        ],
+      ])
+    );
+    console.log(loop_display);
     loop_addition.scheduled = true;
     loop_addition.key += 1;
   };
@@ -82,6 +98,26 @@ function ControlPanel() {
         <button onClick={transport_stop}>stop transport</button>
       </div>
       <h3>build a loop</h3>
+      <table>
+        <thead>
+          <tr>
+            {loop_display_headers.map((label, index) => (
+              <th key={index} scope="column">
+                {label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {loop_display.map((element, index) => (
+            <tr key={index}>
+              {element.map((prop, index) => (
+                <td key={index}>{prop}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <label>
         cadence
         <input
